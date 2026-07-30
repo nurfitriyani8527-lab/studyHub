@@ -14,7 +14,7 @@ connectDB()
 connectRedis()
 
 app.use(cors({
-  origin: ['https://studyhub-matw.onrender.com/'], // mendukung origin tanpa dan dengan slash di akhir
+  origin: ['https://studyhub-matw.onrender.com'], // mendukung origin tanpa dan dengan slash di akhir
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
