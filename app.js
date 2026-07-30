@@ -14,7 +14,7 @@ connectDB()
 connectRedis()
 
 app.use(cors({
-  origin: 'http://localhost:5173/', // bisa dari react dan kalau udah di hosting taruh url nya disini
+  origin: ['https://studyhub-matw.onrender.com/'], // mendukung origin tanpa dan dengan slash di akhir
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
