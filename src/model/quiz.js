@@ -30,4 +30,6 @@ const quizSchema = new mongoose.Schema({
     },
 }, { timestamps: true }
 );
-module.exports = mongoose.model('Quiz',quizSchema)
+module.exports = mongoose.model('Quiz',quizSchema.index({
+    material : 1,
+    }))

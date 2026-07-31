@@ -9,20 +9,38 @@ const routes = require("./src/routes/route")
 const authRoutes = require("./src/routes/authRoutes")
 const { connectRedis } = require("./src/config/redis")
 const helmet = require("helmet")
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss-clean');
+const compression = require('compression');
 
 connectDB()
 connectRedis()
 
 app.use(cors({
-  origin: ["http://localhost:5173", "https://studyhub-matw.vercel.app"], // mendukung origin tanpa dan dengan slash di akhir
+  origin: ["http://localhost:5173", "https://studyhub-matw.vercel.app"], 
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.use(express.json())
+// Batasi ukuran JSON payload maksimal 10kb
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+
 app.use('/uploads', express.static('uploads'));
 
+// middleware express yang menambahkan header keamanan HTTP
 app.use(helmet())
+
+// Sanitasi data dari NoSQL Injection
+app.use(mongoSanitize());
+
+// Sanitasi data dari script berbahaya (XSS)
+app.use(xss());
+
+// Mengkompres semua response JSON & teks dari server sebelum dikirim ke pengguna. 
+
+app.use(compression());
+
 app.use('/', routes)
 app.use('/auth', authRoutes)
 app.use(uploadErrorHandler)

@@ -16,4 +16,6 @@ const summarySchema = new mongoose.Schema({
     },
 }, { timestamps: true }
 );
-module.exports = mongoose.model('Summary',summarySchema)
+module.exports = mongoose.model('Summary',summarySchema.index({
+    material : 1,
+    }))

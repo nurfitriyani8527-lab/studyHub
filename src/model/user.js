@@ -40,4 +40,6 @@ userSchema.pre('save', async function (next) {
     }
 
  // untuk auto createdAt/updateAt
-module.exports = mongoose.model('User',userSchema)
+module.exports = mongoose.model('User',userSchema.index({
+    createdAt : -1
+    }))
