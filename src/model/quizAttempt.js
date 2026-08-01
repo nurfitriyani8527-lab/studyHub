@@ -40,7 +40,5 @@ const quizAttemptSchema = new mongoose.Schema({
     }
 }, { timestamps: true }
 );
-module.exports = mongoose.model('QuizAttempt',quizAttemptSchema.index({
-    quiz : 1,
-    user : 1
-    }))
+quizAttemptSchema.index({ quiz: 1, user: 1 });
+module.exports = mongoose.model('QuizAttempt', quizAttemptSchema);

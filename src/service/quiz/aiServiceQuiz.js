@@ -16,6 +16,7 @@ const systemPrompt = `
     - Semua key harus pakai tanda kutip ganda sesuai standar JSON
     - jangan ada emote, pokoknya jangan ada yang melenceng dari perintah!!
     - JANGAN membuat lebih dari 4 options.
+    - Pakai bahasa sesuai PDF/DOCX yang diupload yaaa!
     Contoh format output:
     [
         { "question": "...", "options": ["A. ...", "B. ...", "C. ...", "D. ..."], "correctAnswer": "B", "explanation": "..." },

@@ -92,7 +92,6 @@ exports.postSummary = async (req, res) => {
     }
 };
 
-// ini untuk dijadiin riwayat di frontend
 exports.getSummary = async (req, res) => {
     try {
         const { id } = req.params;
@@ -159,42 +158,42 @@ exports.postCheckAnswer = async (req, res) => {
         let correctCount = 0
         const detailedAnswers = []
 
-        answers.forEach((answer) => {
+        for (const answer of answers) {
             const question = quiz.questions.find(
                 (q) => q._id.toString() === answer.questionId
-            )
-            if (!question){
-                respon(res,404,false,"jawaban belum ada",question)
-            } 
+            );
+            if (!question) {
+                return respon(res, 404, false, "Soal tidak ditemukan untuk ID yang diberikan", null);
+            }
 
-            const isCorrect = question.correctAnswer === answer.selectedAnswer
+            const isCorrect = question.correctAnswer === answer.selectedAnswer;
             if (isCorrect) {
-                correctCount++
+                correctCount++;
             }
 
             detailedAnswers.push({
                 questionId: answer.questionId,
                 selectedAnswer: answer.selectedAnswer,
                 isCorrect
-            })
-        })
+            });
+        }
 
-        const totalQuestions = quiz.questions.length
-        const score = (correctCount / totalQuestions) * 100 // rumus persentase, kamu udah tau dari sebelumnya
+        const totalQuestions = quiz.questions.length;
+        const score = (correctCount / totalQuestions) * 100;
 
         // simpan ke QuizAttempt
         const attempt = await QuizAttempt.create({
             quiz: quiz._id,
             user: userId,
-            answer: detailedAnswers,
+            answers: detailedAnswers,
             score,
             correctCount,
             totalQuestions
-              // isi semua field sesuai schema yang ka
-            // mu bikin
-        })
+        });
         respon(res, 200, true, "Koreksi berhasil", attempt)
     } catch (error) {
         return respon(res, 500, false, "Ada kesalahan saat koreksi jawaban", error.message)
     }
 }
+
+// next malem tambahin getDashboard udah ada di gpt
