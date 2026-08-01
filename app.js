@@ -28,17 +28,16 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 app.use('/uploads', express.static('uploads'));
 
-// middleware express yang menambahkan header keamanan HTTP
-app.use(helmet())
-
 // Sanitasi data dari NoSQL Injection
 app.use(mongoSanitize());
 
 // Sanitasi data dari script berbahaya (XSS)
 app.use(xss());
 
-// Mengkompres semua response JSON & teks dari server sebelum dikirim ke pengguna. 
+// middleware express yang menambahkan header keamanan HTTP
+app.use(helmet())
 
+// Mengkompres semua response JSON & teks dari server sebelum dikirim ke pengguna. 
 app.use(compression());
 
 app.use('/', routes)

@@ -48,12 +48,12 @@ exports.postLogin = async (req, res) => {
         if (!user) {
             return respon(res, 401, false, "Email atau password salah");
         }
-        // console.log("Body:", req.body);
-        // console.log("Email:", email);
-        // console.log("Password:", password);
-        // console.log("User:", user);
-        // console.log("User Password:", user?.password);
-        // Baru cek password
+        console.log("Body:", req.body);
+        console.log("Email:", email);
+        console.log("Password:", password);
+        console.log("User:", user);
+        console.log("User Password:", user?.password);
+        
         const isMatch = await bcrypt.compare(password, user.password);
 
         if (!isMatch) {
@@ -68,7 +68,6 @@ exports.postLogin = async (req, res) => {
         );
 
         return respon(res, 200, true, "Login berhasil", { token });
-
     } catch (error) {
         return respon(res, 500, false, "Server error", error.message);
     }
