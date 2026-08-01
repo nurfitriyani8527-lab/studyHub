@@ -48,7 +48,7 @@ exports.postFile = async (req,res) => {
         });
         respon(res,201,true,"file berhasil di upload",file) // respon kalau berhasil
     } catch (error) {
-        respon(res,500,false,"ada kesalahan saat memasukan file",error.message) // respon kalau salah
+        return respon(res,500,false,"ada kesalahan saat memasukan file",error.message) // respon kalau salah
     }
 }
 

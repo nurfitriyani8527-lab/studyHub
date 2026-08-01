@@ -3,6 +3,13 @@ const respon = require("../utils/response")
 
 const uploadErrorHandler = (err, req, res, next) => {
     if (err instanceof multer.MulterError) {
+    //     return res.status(400).json({
+    //         success: false,
+    //         name: err.name,
+    //         code: err.code,
+    //         message: err.message,
+    //         stack: process.env.NODE_ENV !== "production" ? err.stack : undefined
+    // });
         switch (err.code) {
                 case "LIMIT_FILE_SIZE":
                     err.message = "Ukuran file maksimal 10 MB";
