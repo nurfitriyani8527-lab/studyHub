@@ -10,7 +10,6 @@ const authRoutes = require("./src/routes/authRoutes")
 const { connectRedis } = require("./src/config/redis")
 const helmet = require("helmet")
 const mongoSanitize = require('express-mongo-sanitize');
-const xss = require('xss-clean');
 const compression = require('compression');
 
 connectDB()
@@ -28,11 +27,13 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 app.use('/uploads', express.static('uploads'));
 
-// Sanitasi data dari NoSQL Injection
-app.use(mongoSanitize());
-
-// Sanitasi data dari script berbahaya (XSS)
-app.use(xss());
+// Sanitasi data dari NoSQL Injection (Compatible dengan Express 5 req.query getter)
+app.use((req, res, next) => {
+  if (req.body) mongoSanitize.sanitize(req.body);
+  if (req.params) mongoSanitize.sanitize(req.params);
+  if (req.query) mongoSanitize.sanitize(req.query);
+  next();
+});
 
 // middleware express yang menambahkan header keamanan HTTP
 app.use(helmet())
