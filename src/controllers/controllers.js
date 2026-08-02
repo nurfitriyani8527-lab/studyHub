@@ -14,6 +14,7 @@ const { createSummary } = require("../service/ringkasan/summaryService");
 // const { cleanAiJsonResponse } = require("../service/quiz/cleanAiJsonResponse")
 // const chunkText = require("../service/chunkService")
 const { createQuiz } = require('../service/quiz/quizService')
+const uploadQueue = require("../queue/uploadQueue")
 
 exports.postFile = async (req,res) => {
     try {
@@ -64,14 +65,32 @@ exports.postExtract = async (req,res) => {
             status: "processing",
             file: file._id
         });
-        
-        const filePath = path.resolve("./uploads", file.fileName);
-        const text = await extractTextFromPdf(filePath)
-        console.log("TEXT:", text);
 
-        material.textContent = text
-        material.status = "done"
-        await material.save()
+        // Extract PDF
+        const filePath = path.resolve("./uploads", file.fileName);
+        const text = await extractTextFromPdf(filePath);
+
+        // Simpan hasil extract
+        material.textContent = text;
+        await material.save();
+        
+        await uploadQueue.add(
+            "upload-material",
+            {
+                materialId: material._id.toString(),
+                fileName: file.fileName,
+            },
+            {
+                attempts: 3,
+                backoff: {
+                    type: "exponential",
+                    delay: 5000,
+                },
+                removeOnComplete: true,
+                removeOnFail: false,
+            }
+        );
+
         respon(res,200,true,"upload file berhasil",material)
     } catch (error) {
         if (material) {
