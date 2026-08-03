@@ -57,6 +57,7 @@ exports.postExtract = async (req,res) => {
     let material
     try {
         const _id = req.params._id
+
         const file = await File.findById(_id)
         if(!file){
             return respon(res,404,false,"File tidak ditemukan",null)
@@ -66,14 +67,6 @@ exports.postExtract = async (req,res) => {
             file: file._id
         });
 
-        // Extract PDF
-        const filePath = path.resolve("./uploads", file.fileName);
-        const text = await extractTextFromPdf(filePath);
-
-        // Simpan hasil extract
-        material.textContent = text;
-        await material.save();
-        
         await uploadQueue.add(
             "upload-material",
             {

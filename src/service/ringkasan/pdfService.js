@@ -1,6 +1,7 @@
 const fs = require("fs/promises");
 const { PDFParse } = require("pdf-parse");
 
+// untuk pdf
 exports.extractTextFromPdf = async (filePath) => {
     try {
         const dataBuffer = await fs.readFile(filePath);

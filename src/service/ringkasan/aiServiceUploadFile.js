@@ -10,6 +10,8 @@ Aturan:
 `;
 
 exports.generateSummary = async (text) => {
+    console.log("TEXT MASUK:", typeof text);
+    console.log(text);
     const chunks = chunkText(text, 5000);
     const summaries = [];
     for (const chunk of chunks) {

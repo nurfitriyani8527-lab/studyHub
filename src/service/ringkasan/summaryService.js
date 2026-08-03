@@ -6,6 +6,9 @@ const { generateSummary } = require("./aiServiceUploadFile");
 exports.createSummary = async (materialId) => {
     // cek material
     const material = await Material.findById(materialId);
+    console.log("===== MATERIAL =====");
+    console.log(material);
+    console.log("====================");
     if (!material) {
         throw new Error("Material tidak ditemukan");
     }
@@ -32,6 +35,9 @@ exports.createSummary = async (materialId) => {
         status: "processing",
     });
     try {
+        console.log("TEXT CONTENT:");
+        console.log(material.textContent);
+        console.log(typeof material.textContent);
         const result = await generateSummary(
             material.textContent
         );

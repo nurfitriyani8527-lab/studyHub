@@ -1,3 +1,4 @@
+require("dotenv").config();
 const Redis = require("ioredis");
 const { URL } = require("url");
 // untuk mendapatkan redis TCP ini pakailah hostingers northflank(gratis) 
