@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for studyhub-inwyfq on 2026-08-05T10:49:50Z
+# fly.toml app configuration file generated for studyhub-worker on 2026-08-05T11:41:53Z
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'studyhub-inwyfq'
+app = 'studyhub-worker'
 primary_region = 'sin'
 
 [build]
