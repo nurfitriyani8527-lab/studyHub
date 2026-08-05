@@ -13,6 +13,7 @@ const mongoSanitize = require('express-mongo-sanitize');
 const compression = require('compression');
 
 connectDB()
+require("./src/workers/uploadWorker");
 connectRedis()
 
 app.use(cors({

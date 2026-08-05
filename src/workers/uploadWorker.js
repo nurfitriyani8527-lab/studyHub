@@ -9,11 +9,8 @@ const Material = require("../model/material");
 const { extractTextFromPdf } = require("../service/ringkasan/pdfService");
 const { createQuiz } = require("../service/quiz/quizService")
 const { createSummary } = require("../service/ringkasan/summaryService")
-const { connectDB } = require("../config/database")
 const { extractTextFromDocx } = require("../service/ringkasan/docxService")
 const File = require("../model/uploadFile")
-
-connectDB()
 
 const worker = new Worker(
     "upload-material",
