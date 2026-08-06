@@ -19,10 +19,6 @@ const quizValidation = [
     body("answers")
         .isArray({ min: 1 })
         .withMessage("answers harus berupa array dan tidak boleh kosong"),
-
-    body("answers.*")
-        .isIn(["A", "B", "C", "D"])
-        .withMessage("Jawaban hanya boleh A, B, C, atau D"),
 ]
 
 const validate = (req, res, next) => {
