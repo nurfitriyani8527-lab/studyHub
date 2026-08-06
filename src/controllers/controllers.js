@@ -189,8 +189,8 @@ exports.postCheckAnswer = async (req, res) => {
             });
         }
 
-        const totalQuestions = quiz.questions.length;
-        const score = (correctCount / totalQuestions) * 100;
+        const totalQuestions = quiz.questions.length
+        const score = Math.round((correctCount / totalQuestions) * 100) // dibulatkan
 
         // simpan ke QuizAttempt
         const attempt = await QuizAttempt.create({

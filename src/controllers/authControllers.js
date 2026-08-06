@@ -7,7 +7,6 @@ const bcrypt = require("bcrypt")
 exports.postRegister = async (req,res) => {
     try {
         const { name, email, password } = req.body
-        console.log(req.body)
         if(!name || !email || !password){
             return respon(res,401,false,"data tidak boleh kosong")
         }
@@ -15,13 +14,11 @@ exports.postRegister = async (req,res) => {
             if(duplikat){
                 return respon(res,400,false,"Email sudah terdaftar")
             }
-        // Hash password
-        const hashedPassword = await bcrypt.hash(password,10);
 
         const saveLogin = await User.create({
             name,
             email,
-            password: hashedPassword
+            password
         });
 
         respon(res, 201, true, "Berhasil membuat akun", {
@@ -36,21 +33,24 @@ exports.postRegister = async (req,res) => {
     }
 }
 
-
 exports.postLogin = async (req, res) => {
     try {
         const { email, password } = req.body;
 
         // Cari user
         const user = await User.findOne({ email });
-
+        
         // Jika user tidak ada
         if (!user) {
             return respon(res, 401, false, "Email atau password salah");
         }
         
         const isMatch = await bcrypt.compare(password, user.password);
-
+        console.log({
+            inputPassword: password,
+            hash: user.password,
+            isMatch,
+        })
         if (!isMatch) {
             return respon(res, 401, false, "Email atau password salah");
         }
