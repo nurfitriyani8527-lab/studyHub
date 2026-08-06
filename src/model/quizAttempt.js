@@ -18,7 +18,11 @@ const quizAttemptSchema = new mongoose.Schema({
             },      
             selectedAnswer: {
                 type: String,
-                required: true
+                required: true,
+                isIt: {
+                    options: [["A", "B", "C", "D"]],
+                    errorMessage: "Jawaban hanya boleh A, B, C, atau D"
+                }
             },
             isCorrect: {
                 type: Boolean,
