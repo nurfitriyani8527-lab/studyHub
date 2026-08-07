@@ -38,6 +38,10 @@ exports.createSummary = async (materialId) => {
         console.log("TEXT CONTENT:");
         console.log(material.textContent);
         console.log(typeof material.textContent);
+        if (!material.textContent) {
+            throw new Error("Material belum memiliki textContent");
+        }
+        
         const result = await generateSummary(
             material.textContent
         );

@@ -4,7 +4,7 @@ const { cleanAiJsonResponse } = require("./cleanAiJsonResponse")
 
 const systemPrompt = `
     Kamu adalah ai yang akan bikin soal pilihan ganda, kamu bakal di kasih teks materi buat di proses.
-    Buatkan maksimal 1 soal pilihan ganda berdasarkan materi yang diberikan.
+    Buatkan maksimal 5 soal pilihan ganda berdasarkan materi yang diberikan.
     Setiap soal harus punya: 
     - pertanyaan
     - 4 pilihan jawaban (A, B, C, D)
