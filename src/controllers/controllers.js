@@ -15,6 +15,7 @@ const { createSummary } = require("../service/ringkasan/summaryService");
 // const chunkText = require("../service/chunkService")
 const { createQuiz } = require('../service/quiz/quizService')
 const uploadQueue = require("../queue/uploadQueue")
+const { tryCatch } = require('bullmq')
 
 exports.postFile = async (req,res) => {
     try {
@@ -202,9 +203,91 @@ exports.postCheckAnswer = async (req, res) => {
             totalQuestions
         });
         respon(res, 200, true, "Koreksi berhasil", attempt)
-    } catch (error) {
+    } catch (error) { 
         return respon(res, 500, false, "Ada kesalahan saat koreksi jawaban", error.message)
     }
 }
 
-// next malem tambahin getDashboard udah ada di gpt
+exports.getDashboard = async (req,res) => {
+    try {
+        const userId = req.user.id
+        // hitung total file milik user (dokumen ter upload)
+        const totalFiles = await File.countDocuments({ user: userId })
+
+        // mencari quizAttempt dari user (rata2 quiz)
+        const quizAttempt = await QuizAttempt.find({ user: userId})
+        // ambil nilai yang cuman ada di score
+        const score = quizAttempt.map((item) => item.score)
+        // menjumlahkan semua score
+        const total = score.reduce((acc,curr) => acc + curr, 0)
+        // di rata2 in pakai ternary
+        const average = quizAttempt.length ? total / quizAttempt.length : 0
+        console.log("nilai rata2 : ",average)
+
+        // ambil semua file milik user lagi (query berjenjang karena model summary and quiz gak ada usernya)
+        const files = await File.find({ user: userId })
+        const fileIds = files.map((file) => file._id) 
+        // Ambil semua Material yang file-nya ada di dalam fileIds
+        const materials = await Material.find({ file: { $in: fileIds } })
+        const materialIds = materials.map((material) => material._id)
+        
+        // total summary (ringkasan yang dibuat)
+        const totalSummaries = await Summary.countDocuments({ 
+            material: { $in: materialIds },
+            status: 'done'   
+        })
+        console.log("Total Summary : ",totalSummaries)
+
+        // total quiz (quiz dikerjakan)
+        const totalQuizzes = await quizAttempt.length
+        console.log("Total Summary : ",totalQuizzes)
+
+        respon(res, 200, true, "Dashboard berhasil diambil", {
+            totalFiles,
+            totalSummaries,
+            totalQuizzes,
+            averageScore: Math.round(average)  // dibulatin
+        })
+    } catch (error) {
+        return respon(res, 500, false, "Ada kesalahan saat mengambil dashboard", error.message)
+    }
+}
+
+exports.getRecentActivity = async (req, res) => {
+    try {
+        const userId = req.user.id
+
+        // ambil 10 file terbaru milik user, urut dari yang paling baru
+        const files = await File.find({ user: userId })
+            .sort({ createdAt: -1 })
+            .limit(10)
+
+        // buat tiap file, cek status pemrosesannya (summary/quiz udah siap atau belum)
+        const activities = await Promise.all(
+            files.map(async (file) => {
+                const material = await Material.findOne({ file: file._id })
+
+                let badge = "Diproses"
+                if (material) {
+                    const quiz = await Quiz.findOne({ material: material._id, status: 'done' })
+                    const summary = await Summary.findOne({ material: material._id, status: 'done' })
+
+                    if (quiz) badge = "Kuis Siap"
+                    else if (summary) badge = "Ringkasan Siap"
+                }
+
+                return {
+                    fileId: file._id,
+                    name: file.originalName,
+                    type: file.fileType,
+                    status: badge,
+                    createdAt: file.createdAt
+                }
+            })
+        )
+
+        respon(res, 200, true, "Aktivitas terbaru berhasil diambil", activities)
+    } catch (error) {
+        return respon(res, 500, false, "Ada kesalahan saat mengambil aktivitas", error.message)
+    }
+}

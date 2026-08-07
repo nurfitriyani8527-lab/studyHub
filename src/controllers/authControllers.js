@@ -46,11 +46,6 @@ exports.postLogin = async (req, res) => {
         }
         
         const isMatch = await bcrypt.compare(password, user.password);
-        console.log({
-            inputPassword: password,
-            hash: user.password,
-            isMatch,
-        })
         if (!isMatch) {
             return respon(res, 401, false, "Email atau password salah");
         }
