@@ -255,12 +255,18 @@ exports.getDashboard = async (req,res) => {
 
 exports.getRecentActivity = async (req, res) => {
     try {
+        // pagination
+        const page = Number(req.query.page) || 1;
+        const limit = 5;
+        const skip = (page - 1) * limit;
+
         const userId = req.user.id
 
         // ambil 10 file terbaru milik user, urut dari yang paling baru
         const files = await File.find({ user: userId })
             .sort({ createdAt: -1 })
-            .limit(10)
+            .skip(skip)
+            .limit(limit);
 
         // buat tiap file, cek status pemrosesannya (summary/quiz udah siap atau belum)
         const activities = await Promise.all(
