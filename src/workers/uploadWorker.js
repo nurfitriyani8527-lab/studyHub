@@ -43,14 +43,14 @@ const worker = new Worker(
         } else {
             throw new Error("Format file tidak didukung");
         }
-        console.log("HASIL EXTRACT:", text?.slice(0,100));
+        // console.log("HASIL EXTRACT:", text?.slice(0,100));
         console.log(text);
 
         material.textContent = text;
         await material.save();
 
         console.log("SETELAH SAVE:");
-        console.log(material.textContent?.slice(0,100));
+        // console.log(material.textContent?.slice(0,100));
 
         console.log("Generate Summary...");
         await createSummary(material._id);
