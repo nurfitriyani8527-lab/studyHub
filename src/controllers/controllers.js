@@ -112,15 +112,20 @@ exports.getSummary = async (req, res) => {
 
         // 1. Cek Redis
         const cache = await redis.get(key);
+        console.log(typeof cache);
+        console.log(cache);
 
         if (cache) {
             console.log("Cache HIT");
-            return respon(res,200,true,JSON.parse(cache));
+            return respon(res,200,true,cache)
         }
         console.log("Cache MISS");
 
         // 2. Ambil dari MongoDB
-        const summary = await Summary.findById(id).lean();
+        const summary = await Summary.findOne({
+            material: materialId
+        }).lean();
+        
         if (!summary) {
             return respon(res,404,false,"Summary tidak ditemukan",null);
         }
