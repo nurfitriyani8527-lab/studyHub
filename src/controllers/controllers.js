@@ -9,6 +9,7 @@ const path = require('path')
 const fs = require('fs')
 const { extractTextFromPdf } = require("../service/ringkasan/pdfService")
 const { redis } = require("../config/redis")
+const { getCached, saveCache } = require("../service/cacheService")
 const { createSummary } = require("../service/ringkasan/summaryService");
 // const callAI = require("../service/aiService")
 // const { cleanAiJsonResponse } = require("../service/quiz/cleanAiJsonResponse")
@@ -107,41 +108,38 @@ exports.postSummary = async (req, res) => {
 
 exports.getSummary = async (req, res) => {
     try {
-        const { id, materialId } = req.params;
-        const key = `summary:${id}`;
+        const targetId = req.params.materialId || req.params.id || req.params._id;
+        const key = `summary:${targetId}`;
 
         // 1. Cek Redis
-        const cache = await redis.get(key);
-        console.log(typeof cache);
-        console.log(cache);
+        const cache = await getCached(key);
 
         if (cache) {
             console.log("Cache HIT");
-            return respon(res,200,true,cache)
+            return respon(res, 200, true, "Data dari cache", cache);
         }
         console.log("Cache MISS");
 
         // 2. Ambil dari MongoDB
         const summary = await Summary.findOne({
-            material: materialId
+            $or: [
+                { material: targetId },
+                { _id: targetId }
+            ]
         }).lean();
 
         if (!summary) {
-            return respon(res,404,false,"Summary tidak ditemukan",null);
+            return respon(res, 404, false, "Summary tidak ditemukan", null);
         }
 
-        // 3. Simpan ke Redis selama 5 menit
-        await redis.set(
-            key,
-            JSON.stringify(summary),
-            {
-                ex: 300
-            }
-        );
-        return respon(res,200,true,"Data dari database",summary);
+        // 3. Simpan ke Redis selama status 'done'
+        if (summary.status === 'done') {
+            await saveCache(key, summary);
+        }
+        return respon(res, 200, true, "Data dari database", summary);
     } catch (error) {
         console.error(error);
-        return respon(res,500,false,"Terjadi kesalahan server",null);
+        return respon(res, 500, false, "Terjadi kesalahan server", null);
     }
 };
 

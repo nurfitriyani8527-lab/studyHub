@@ -6,45 +6,44 @@ const { generateSummary } = require("./aiServiceUploadFile");
 exports.createSummary = async (materialId) => {
     // cek material
     const material = await Material.findById(materialId);
-    console.log("===== MATERIAL =====");
-    console.log(material);
-    console.log("====================");
     if (!material) {
         throw new Error("Material tidak ditemukan");
     }
+
+    if (!material.textContent) {
+        throw new Error("Material belum memiliki textContent");
+    }
+
     const cacheKey = `summary:${material._id}`;
 
     // cek cache
     const cache = await getCached(cacheKey);
-    if (cache) {
+    if (cache && cache.status === "done") {
         return cache;
     }
 
     // cek database
-    const existingSummary = await Summary.findOne({
+    let summary = await Summary.findOne({
         material: material._id,
     });
-    if (existingSummary) {
-        await saveCache(cacheKey, existingSummary);
-        return existingSummary;
+
+    if (summary && summary.status === "done") {
+        await saveCache(cacheKey, summary);
+        return summary;
     }
 
-    // buat processing
-    const summary = await Summary.create({
-        material: material._id,
-        status: "processing",
-    });
+    if (!summary) {
+        summary = await Summary.create({
+            material: material._id,
+            status: "processing",
+        });
+    } else {
+        summary.status = "processing";
+        await summary.save();
+    }
+
     try {
-        console.log("TEXT CONTENT:");
-        console.log(material.textContent);
-        console.log(typeof material.textContent);
-        if (!material.textContent) {
-            throw new Error("Material belum memiliki textContent");
-        }
-        
-        const result = await generateSummary(
-            material.textContent
-        );
+        const result = await generateSummary(material.textContent);
         summary.summaryContent = result;
         summary.status = "done";
 
