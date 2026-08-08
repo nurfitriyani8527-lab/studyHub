@@ -2,6 +2,36 @@ const callAI = require("../aiService");
 const chunkText = require("../chunkService");
 const { cleanAiJsonResponse } = require("./cleanAiJsonResponse")
 
+const quizSchema = {
+    type: "json_schema",
+    json_schema: {
+        name: "quiz",
+        strict: true,
+        schema: {
+            type: "array",
+            items: {
+                type: "object",
+                properties: {
+                    question: { type: "string" },
+                    options: {
+                        type: "array",
+                        items: { type: "string" },
+                        minItems: 4,
+                        maxItems: 4
+                    },
+                    correctAnswer: {
+                        type: "string",
+                        enum: ["A", "B", "C", "D"]
+                    },
+                    explanation: { type: "string" }
+                },
+                required: ["question", "options", "correctAnswer", "explanation"],
+                additionalProperties: false
+            }
+        }
+    }
+};
+
 const systemPrompt = `
     Kamu adalah ai yang akan bikin soal pilihan ganda, kamu bakal di kasih teks materi buat di proses.
     Buatkan maksimal 5 soal pilihan ganda berdasarkan materi yang diberikan.
@@ -35,7 +65,7 @@ exports.generateQuiz = async (text) => {
         try {
             console.log(`===== Chunk ${i + 1}/${chunks.length} =====`);
 
-            const ai = await callAI(systemPrompt, chunks[i]);
+            const ai = await callAI(systemPrompt, chunks[i], quizSchema);
 
             const clean = cleanAiJsonResponse(ai);
             if (!clean.startsWith("[")) {
