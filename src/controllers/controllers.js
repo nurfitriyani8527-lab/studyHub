@@ -107,7 +107,7 @@ exports.postSummary = async (req, res) => {
 
 exports.getSummary = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id, materialId } = req.params;
         const key = `summary:${id}`;
 
         // 1. Cek Redis
@@ -125,7 +125,7 @@ exports.getSummary = async (req, res) => {
         const summary = await Summary.findOne({
             material: materialId
         }).lean();
-        
+
         if (!summary) {
             return respon(res,404,false,"Summary tidak ditemukan",null);
         }
