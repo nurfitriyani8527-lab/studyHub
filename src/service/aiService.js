@@ -4,7 +4,7 @@ const axios = require('axios')
 const callAI = async (systemPrompt, userPrompt, responseFormat = null) => {
     try {
         const payload = {
-            model: "openai/gpt-oss-20b:free",
+            model: process.env.OPENROUTER_MODEL,
             temperature: 0,
             max_tokens: 2000,
 

@@ -20,29 +20,32 @@ const worker = new Worker(
 
         const material = await Material.findById(materialId);
 
-        if (!material) {
-            throw new Error("Material tidak ditemukan");
-        }
+    if (!material) {
+        throw new Error("Material tidak ditemukan");
+    }
 
-        console.log("Generate Extract...");
-        
-        const filePath = path.join(
-            __dirname,
-            "../../uploads",
-            fileName
-        );
+    const file = await File.findById(material.file);
 
-        const file = await File.findById(material.file);
+    if (!file) {
+        throw new Error("File tidak ditemukan");
+    }
 
-        let text;
+    const filePath = path.join(
+        __dirname,
+        "../../uploads",
+        fileName
+    );
 
-        if (file.fileType === "pdf") {
-            text = await extractTextFromPdf(filePath);
-        } else if (file.fileType === "docx") {
-            text = await extractTextFromDocx(filePath);
-        } else {
-            throw new Error("Format file tidak didukung");
-        }
+    let text;
+
+    if (file.fileType === "pdf") {
+        text = await extractTextFromPdf(filePath);
+    } else if (file.fileType === "docx") {
+        text = await extractTextFromDocx(filePath);
+    } else {
+        throw new Error("Format file tidak didukung");
+    }
+
         // console.log("HASIL EXTRACT:", text?.slice(0,100));
         console.log(text);
 
