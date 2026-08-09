@@ -18,13 +18,13 @@ const { createQuiz } = require('../service/quiz/quizService')
 const uploadQueue = require("../queue/uploadQueue")
 const { tryCatch } = require('bullmq')
 
-exports.postFile = async (req,res) => {
+exports.postFile = async (req, res) => {
     try {
-        if(!req.file){
-            return respon(res,400,false,"tidak ada file yang dipilih",req.file)
+        if (!req.file) {
+            return respon(res, 400, false, "tidak ada file yang dipilih", req.file)
         }
         // ambil data dari req.file
-        const { originalname,filename,size,mimetype } = req.file
+        const { originalname, filename, size, mimetype } = req.file
 
         // ambil data user
         const user = req.user;
@@ -44,25 +44,25 @@ exports.postFile = async (req,res) => {
         // simpan ke db
         const file = await File.create({
             user: user.id,
-            originalName : originalname,
-            fileName : filename,
+            originalName: originalname,
+            fileName: filename,
             fileSize: size,
             fileType
         });
-        respon(res,201,true,"file berhasil di upload",file) // respon kalau berhasil
+        respon(res, 201, true, "file berhasil di upload", file) // respon kalau berhasil
     } catch (error) {
-        return respon(res,500,false,"ada kesalahan saat memasukan file",error.message) // respon kalau salah
+        return respon(res, 500, false, "ada kesalahan saat memasukan file", error.message) // respon kalau salah
     }
 }
 
-exports.postExtract = async (req,res) => {
+exports.postExtract = async (req, res) => {
     let material
     try {
         const _id = req.params._id
 
         const file = await File.findById(_id)
-        if(!file){
-            return respon(res,404,false,"File tidak ditemukan",null)
+        if (!file) {
+            return respon(res, 404, false, "File tidak ditemukan", null)
         }
         material = await Material.create({
             status: "processing",
@@ -86,7 +86,7 @@ exports.postExtract = async (req,res) => {
             }
         );
 
-        respon(res,200,true,"upload file berhasil",material)
+        respon(res, 200, true, "upload file berhasil", material)
     } catch (error) {
         if (material) {
             material.status = "failed";
@@ -100,16 +100,20 @@ exports.postSummary = async (req, res) => {
     try {
         const summary = await createSummary(req.params._id);
 
-        return respon(res,200,true,"Summary berhasil dibuat",summary);
+        return respon(res, 200, true, "Summary berhasil dibuat", summary);
     } catch (err) {
-        return respon(res,500,false,"ada kesalahan saat summary",err.message);
+        return respon(res, 500, false, "ada kesalahan saat summary", err.message);
     }
 };
 
 exports.getSummary = async (req, res) => {
     try {
-        const targetId = req.params.materialId || req.params.id || req.params._id;
-        const key = `summary:${targetId}`;
+        const materialId = req.params.id
+        const material = await Material.findById(materialId);
+        if (!material) {
+            return respon(res, 404, false, "Material tidak ditemukan", null)
+        }
+        const key = `summary:${material._id}`;
 
         // 1. Cek Redis
         const cache = await getCached(key);
@@ -143,13 +147,13 @@ exports.getSummary = async (req, res) => {
     }
 };
 
-exports.postQuiz = async (req,res) => {
+exports.postQuiz = async (req, res) => {
     try {
         const quiz = await createQuiz(req.params._id);
         // console.log(quiz)
-        return respon(res,200,true,"Quiz berhasil dibuat",quiz);
+        return respon(res, 200, true, "Quiz berhasil dibuat", quiz);
     } catch (err) {
-        return respon(res,500,false,"ada kesalahan saat membuat quiz",err.message);
+        return respon(res, 500, false, "ada kesalahan saat membuat quiz", err.message);
     }
 }
 
@@ -163,7 +167,7 @@ exports.postCheckAnswer = async (req, res) => {
 
         const { answers } = req.body
         if (answers.length !== quiz.questions.length) {
-            return respon(res,400,false,"Jumlah jawaban tidak sesuai dengan jumlah soal",null);
+            return respon(res, 400, false, "Jumlah jawaban tidak sesuai dengan jumlah soal", null);
         }
 
         const userId = req.user.id
@@ -206,44 +210,44 @@ exports.postCheckAnswer = async (req, res) => {
             totalQuestions
         });
         respon(res, 200, true, "Koreksi berhasil", attempt)
-    } catch (error) { 
+    } catch (error) {
         return respon(res, 500, false, "Ada kesalahan saat koreksi jawaban", error.message)
     }
 }
 
-exports.getDashboard = async (req,res) => {
+exports.getDashboard = async (req, res) => {
     try {
         const userId = req.user.id
         // hitung total file milik user (dokumen ter upload)
         const totalFiles = await File.countDocuments({ user: userId })
 
         // mencari quizAttempt dari user (rata2 quiz)
-        const quizAttempt = await QuizAttempt.find({ user: userId})
+        const quizAttempt = await QuizAttempt.find({ user: userId })
         // ambil nilai yang cuman ada di score
         const score = quizAttempt.map((item) => item.score)
         // menjumlahkan semua score
-        const total = score.reduce((acc,curr) => acc + curr, 0)
+        const total = score.reduce((acc, curr) => acc + curr, 0)
         // di rata2 in pakai ternary
         const average = quizAttempt.length ? total / quizAttempt.length : 0
-        console.log("nilai rata2 : ",average)
+        console.log("nilai rata2 : ", average)
 
         // ambil semua file milik user lagi (query berjenjang karena model summary and quiz gak ada usernya)
         const files = await File.find({ user: userId })
-        const fileIds = files.map((file) => file._id) 
+        const fileIds = files.map((file) => file._id)
         // Ambil semua Material yang file-nya ada di dalam fileIds
         const materials = await Material.find({ file: { $in: fileIds } })
         const materialIds = materials.map((material) => material._id)
-        
+
         // total summary (ringkasan yang dibuat)
-        const totalSummaries = await Summary.countDocuments({ 
+        const totalSummaries = await Summary.countDocuments({
             material: { $in: materialIds },
-            status: 'done'   
+            status: 'done'
         })
-        console.log("Total Summary : ",totalSummaries)
+        console.log("Total Summary : ", totalSummaries)
 
         // total quiz (quiz dikerjakan)
         const totalQuizzes = await quizAttempt.length
-        console.log("Total Summary : ",totalQuizzes)
+        console.log("Total Summary : ", totalQuizzes)
 
         respon(res, 200, true, "Dashboard berhasil diambil", {
             totalFiles,
