@@ -109,11 +109,10 @@ exports.postSummary = async (req, res) => {
 exports.getSummary = async (req, res) => {
     try {
         const materialId = req.params.id
-        const material = await Material.findById(materialId);
-        if (!material) {
-            return respon(res, 404, false, "Material tidak ditemukan", null)
+        if (!materialId) {
+            return respon(res, 400, false, "Material tidak ditemukan", materialId)
         }
-        const key = `summary:${material._id}`;
+        const key = `summary:${materialId}`;
 
         // 1. Cek Redis
         const cache = await getCached(key);
@@ -126,14 +125,11 @@ exports.getSummary = async (req, res) => {
 
         // 2. Ambil dari MongoDB
         const summary = await Summary.findOne({
-            $or: [
-                { material: materialId },
-                { _id: materialId }
-            ]
+            material: materialId 
         }).lean();
 
         if (!summary) {
-            return respon(res, 404, false, "Summary tidak ditemukan", null);
+            return respon(res, 404, false, "Summary tidak ditemukan", summary);
         }
 
         // 3. Simpan ke Redis selama status 'done'
@@ -142,8 +138,8 @@ exports.getSummary = async (req, res) => {
         }
         return respon(res, 200, true, "Data dari database", summary);
     } catch (error) {
-        console.error(error);
-        return respon(res, 500, false, "Terjadi kesalahan server", null);
+        console.error("Error getSummary:", error);
+        return respon(res, 500, false, "Terjadi kesalahan server", error.message);
     }
 };
 
