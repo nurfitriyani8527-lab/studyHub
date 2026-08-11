@@ -51,10 +51,13 @@ const worker = new Worker(
 
         material.textContent = text;
         await material.save();
-
-        console.log("SETELAH SAVE:");
-        // console.log(material.textContent?.slice(0,100));
-
+        
+        const savedMaterial = await Material.findById(material._id);
+        
+        if (!savedMaterial?.textContent?.trim()) {
+            throw new Error("textContent gagal tersimpan ke Material");
+        }
+        
         console.log("Generate Summary...");
         await createSummary(material._id);
 

@@ -86,7 +86,7 @@ exports.postExtract = async (req, res) => {
             }
         );
 
-        respon(res, 200, true, "upload file berhasil", material)
+        respon(res, 200, true, "extract file berhasil", material)
     } catch (error) {
         if (material) {
             material.status = "failed";
