@@ -14,7 +14,7 @@ exports.extractTextFromPdf = async (filePath) => {
 
         await parser.destroy(); // opsional, tapi direkomendasikan
 
-        return result.text;
+        return result
     } catch (error) {
         console.error(error);
         throw error;
