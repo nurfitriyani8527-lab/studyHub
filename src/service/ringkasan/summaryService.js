@@ -10,6 +10,7 @@ exports.createSummary = async (materialId) => {
         throw new Error("Material tidak ditemukan");
     }
 
+    console.log(material.textContent)
     if (!material.textContent) {
         throw new Error("Material belum memiliki textContent");
     }

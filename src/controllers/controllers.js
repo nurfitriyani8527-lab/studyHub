@@ -99,10 +99,12 @@ exports.postExtract = async (req, res) => {
 exports.postSummary = async (req, res) => {
     try {
         const summary = await createSummary(req.params._id);
+        console.log(summary)
 
         return respon(res, 200, true, "Summary berhasil dibuat", summary);
     } catch (err) {
         return respon(res, 500, false, "ada kesalahan saat summary", err.message);
+        console.log(err)
     }
 };
 
