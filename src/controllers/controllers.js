@@ -127,7 +127,7 @@ exports.getSummary = async (req, res) => {
 
         // 2. Ambil dari MongoDB
         const summary = await Summary.findOne({
-            materialId: req.params.id 
+            material : materialId 
         }).lean();
 
         if (!summary) {
