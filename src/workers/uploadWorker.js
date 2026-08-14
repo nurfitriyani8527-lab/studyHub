@@ -47,10 +47,24 @@ const worker = new Worker(
     }
 
         // console.log("HASIL EXTRACT:", text?.slice(0,100));
-        console.log(text);
-
-        material.textContent = text;
-        await material.save();
+    console.log("HASIL EXTRACT:", text);
+    
+    let textContent;
+    
+    if (typeof text === "string") {
+        textContent = text;
+    } else if (text?.pages) {
+        textContent = text.pages
+            .map(page => page.text || "")
+            .join("\n\n");
+    } else {
+        throw new Error("Format hasil extract tidak dikenali");
+    }
+    
+    console.log("TEXT CONTENT:", textContent?.slice(0, 500));
+    
+    material.textContent = textContent;
+    await material.save();
         
         const savedMaterial = await Material.findById(material._id);
         
@@ -77,6 +91,7 @@ const worker = new Worker(
 worker.on("completed", (job) => {
     console.log(`Job ${job.id} selesai`);
 });
+
 
 worker.on("failed", async (job, err) => {
     console.error(err);
