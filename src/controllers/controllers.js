@@ -276,26 +276,39 @@ exports.getRecentActivity = async (req, res) => {
         // buat tiap file, cek status pemrosesannya (summary/quiz udah siap atau belum)
         const activities = await Promise.all(
             files.map(async (file) => {
-                const material = await Material.findOne({ file: file._id })
-
-                let badge = "Diproses"
+                const material = await Material.findOne({
+                    file: file._id
+                });
+            
+                let badge = "Diproses";
+                let summary = null;
+            
                 if (material) {
-                    const quiz = await Quiz.findOne({ material: material._id, status: 'done' })
-                    const summary = await Summary.findOne({ material: material._id, status: 'done' })
-
-                    if (quiz) badge = "Kuis Siap"
-                    else if (summary) badge = "Ringkasan Siap"
+                    const quiz = await Quiz.findOne({
+                        material: material._id,
+                        status: "done"
+                    });
+                
+                    summary = await Summary.findOne({
+                        material: material._id,
+                        status: "done"
+                    });
+                
+                    if (quiz) badge = "Kuis Siap";
+                    else if (summary) badge = "Ringkasan Siap";
                 }
-
+            
                 return {
                     fileId: file._id,
+                    materialId: material?._id,
+                    summaryId: summary?._id,
                     name: file.originalName,
                     type: file.fileType,
                     status: badge,
                     createdAt: file.createdAt
-                }
+                };
             })
-        )
+        );
 
         respon(res, 200, true, "Aktivitas terbaru berhasil diambil", activities)
     } catch (error) {
