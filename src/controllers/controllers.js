@@ -148,7 +148,7 @@ exports.getSummary = async (req, res) => {
 exports.postQuiz = async (req, res) => {
     try {
         const quiz = await createQuiz(req.params._id);
-        // console.log(quiz)
+
         return respon(res, 200, true, "Quiz berhasil dibuat", quiz);
     } catch (err) {
         return respon(res, 500, false, "ada kesalahan saat membuat quiz", err.message);
@@ -210,6 +210,55 @@ exports.postCheckAnswer = async (req, res) => {
         respon(res, 200, true, "Koreksi berhasil", attempt)
     } catch (error) {
         return respon(res, 500, false, "Ada kesalahan saat koreksi jawaban", error.message)
+    }
+}
+
+exports.getRiwayatAnswer = async (req,res) => {
+    try {
+        const quizAttemptId = req.params.id;
+        const userId = req.user.id;
+
+        if (!quizAttemptId) {
+            return respon(res,400,false,"Quiz attempt tidak ditemukan",null);
+        }
+
+        const key = `quiz-attempt:${userId}:${quizAttemptId}`;
+
+        // 1. Cek Redis
+        const cache = await getCached(key);
+
+        if (cache) {
+            console.log("🔥 Quiz Attempt Cache HIT");
+            return respon(res,200,true,"Data dari cache",cache);
+        }
+
+        console.log("🔥 Quiz Attempt Cache MISS");
+
+        // 2. Cari attempt milik user yang sedang login
+        const quizAttempt = await QuizAttempt.findOne({
+            _id: quizAttemptId,
+            user: userId
+        }).lean();
+
+        if (!quizAttempt) {
+            return respon(res,404,false,"Riwayat quiz tidak ditemukan",null);
+        }
+
+        // 3. Data yang memang dibutuhkan frontend
+        const result = {
+            score: quizAttempt.score,
+            correctCount: quizAttempt.correctCount,
+            totalQuestions: quizAttempt.totalQuestions
+        };
+
+        // 4. Simpan cache
+        await saveCache(key, result);
+
+        return respon(res,200,true,"Riwayat quiz berhasil diambil",result);
+
+    } catch (error) {
+        console.error("Error getRiwayatAnswer:", error);
+        return respon(res,500,false,"Terjadi kesalahan server",error.message);
     }
 }
 
@@ -288,6 +337,15 @@ exports.getRecentActivity = async (req, res) => {
                         material: material._id,
                         status: "done"
                     });
+
+                let quizAttempt = null;
+
+                if (quiz) {
+                    quizAttempt = await QuizAttempt.findOne({
+                        quiz: quiz._id,
+                        user: userId
+                    }).sort({ createdAt: -1 });
+                }
                 
                     summary = await Summary.findOne({
                         material: material._id,
