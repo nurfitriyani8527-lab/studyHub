@@ -360,6 +360,7 @@ exports.getRecentActivity = async (req, res) => {
                     fileId: file._id,
                     materialId: material?._id,
                     summaryId: summary?._id,
+                    quizAttemptId: quizAttempt?._id,
                     name: file.originalName,
                     type: file.fileType,
                     status: badge,
