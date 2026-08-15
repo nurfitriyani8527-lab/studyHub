@@ -309,53 +309,54 @@ exports.getDashboard = async (req, res) => {
 
 exports.getRecentActivity = async (req, res) => {
     try {
-        // pagination
         const page = Number(req.query.page) || 1;
         const limit = 5;
         const skip = (page - 1) * limit;
 
-        const userId = req.user.id
+        const userId = req.user.id;
 
-        // ambil 10 file terbaru milik user, urut dari yang paling baru
         const files = await File.find({ user: userId })
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit);
 
-        // buat tiap file, cek status pemrosesannya (summary/quiz udah siap atau belum)
         const activities = await Promise.all(
             files.map(async (file) => {
                 const material = await Material.findOne({
                     file: file._id
                 });
-            
+
                 let badge = "Diproses";
                 let summary = null;
-            
+                let quizAttempt = null;
+
                 if (material) {
                     const quiz = await Quiz.findOne({
                         material: material._id,
                         status: "done"
                     });
 
-                let quizAttempt = null;
-
-                if (quiz) {
-                    quizAttempt = await QuizAttempt.findOne({
-                        quiz: quiz._id,
-                        user: userId
-                    }).sort({ createdAt: -1 });
-                }
-                
                     summary = await Summary.findOne({
                         material: material._id,
                         status: "done"
                     });
-                
-                    if (quiz) badge = "Kuis Siap";
-                    else if (summary) badge = "Ringkasan Siap";
+
+                    if (quiz) {
+                        quizAttempt = await QuizAttempt.findOne({
+                            quiz: quiz._id,
+                            user: userId
+                        })
+                        .sort({ createdAt: -1 })
+                        .lean();
+                    }
+
+                    if (quiz) {
+                        badge = "Kuis Siap";
+                    } else if (summary) {
+                        badge = "Ringkasan Siap";
+                    }
                 }
-            
+
                 return {
                     fileId: file._id,
                     materialId: material?._id,
@@ -369,8 +370,25 @@ exports.getRecentActivity = async (req, res) => {
             })
         );
 
-        respon(res, 200, true, "Aktivitas terbaru berhasil diambil", activities)
+        return respon(
+            res,
+            200,
+            true,
+            "Aktivitas terbaru berhasil diambil",
+            activities
+        );
+
     } catch (error) {
-        return respon(res, 500, false, "Ada kesalahan saat mengambil aktivitas", error.message)
+        console.error("❌ ERROR getRecentActivity:", error);
+        console.error("❌ MESSAGE:", error.message);
+        console.error("❌ STACK:", error.stack);
+
+        return respon(
+            res,
+            500,
+            false,
+            "Ada kesalahan saat mengambil aktivitas",
+            error.message
+        );
     }
-}
+};
