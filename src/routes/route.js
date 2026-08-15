@@ -12,7 +12,7 @@ router.post('/:_id/summary', authMiddleware,  aiRateLimiter, controllers.postSum
 router.get("/summary/:id", authMiddleware, controllers.getSummary);
 router.post('/:_id/quiz', authMiddleware, aiRateLimiter, controllers.postQuiz)
 router.post("/:_id/quizAttempt", authMiddleware, quizValidation, validate, controllers.postCheckAnswer)
-router.get("quizAttempt/:id", authMiddleware, controllers.getRiwayatAnswer)
+router.get("/quizAttempt/:id", authMiddleware, controllers.getRiwayatAnswer)
 router.get("/dashboard", authMiddleware, controllers.getDashboard)
 router.get('/activities', authMiddleware, controllers.getRecentActivity)
 
